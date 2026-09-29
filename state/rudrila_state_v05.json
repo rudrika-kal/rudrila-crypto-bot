@@ -6,12 +6,12 @@
       "side": "SHORT",
       "qty": 0.00927805917617737,
       "entry": 2687.9533720000004,
-      "stop": 2697.3640320000004,
+      "stop": 2680.1583072212,
       "tp": 2674.7784480000005,
       "initial_dist": 9.41066,
       "confidence": 78,
       "opened_at": "2026-09-29T20:59:52.766643+00:00",
-      "lock_moved": false
+      "lock_moved": true
     }
   },
   "closed_trades": [
