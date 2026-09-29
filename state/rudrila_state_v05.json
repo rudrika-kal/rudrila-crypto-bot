@@ -1,5 +1,5 @@
 {
-  "cash": 99.9749925,
+  "cash": 99.94999125375057,
   "realized_pnl": 0.0,
   "positions": {
     "ETHUSDT": {
@@ -12,11 +12,22 @@
       "confidence": 64,
       "opened_at": "2026-09-29T18:37:44.674450+00:00",
       "lock_moved": false
+    },
+    "BTCUSDT": {
+      "side": "LONG",
+      "qty": 0.00029883173149350417,
+      "entry": 83663.29146,
+      "stop": 83370.55776,
+      "tp": 84073.11863999999,
+      "initial_dist": 292.73369999999994,
+      "confidence": 66,
+      "opened_at": "2026-09-29T19:09:31.345774+00:00",
+      "lock_moved": false
     }
   },
   "closed_trades": [],
   "last_exit": {},
-  "equity_peak": 100.0,
+  "equity_peak": 100.0051973598523,
   "day_start_equity": 100.0,
   "day_key": "2026-09-29"
 }
