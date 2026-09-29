@@ -1,7 +1,19 @@
 {
-  "cash": 100.0,
+  "cash": 99.9749925,
   "realized_pnl": 0.0,
-  "positions": {},
+  "positions": {
+    "ETHUSDT": {
+      "side": "LONG",
+      "qty": 0.00929022668153103,
+      "entry": 2691.8073,
+      "stop": 2682.3887999999997,
+      "tp": 2704.9932,
+      "initial_dist": 9.4185,
+      "confidence": 64,
+      "opened_at": "2026-09-29T18:37:44.674450+00:00",
+      "lock_moved": false
+    }
+  },
   "closed_trades": [],
   "last_exit": {},
   "equity_peak": 100.0,
