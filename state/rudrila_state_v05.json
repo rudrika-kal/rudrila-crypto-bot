@@ -1,0 +1,10 @@
+{
+  "cash": 100.0,
+  "realized_pnl": 0.0,
+  "positions": {},
+  "closed_trades": [],
+  "last_exit": {},
+  "equity_peak": 100.0,
+  "day_start_equity": 100.0,
+  "day_key": "2026-09-29"
+}
