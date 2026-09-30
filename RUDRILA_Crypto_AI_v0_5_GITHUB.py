@@ -28,7 +28,7 @@ CONFIG = {
     "max_open_positions": 2,
 
     # Lower than v0.4 to allow more qualified setups.
-    "min_confidence": 64,
+    "min_confidence": 101,
 
     # Faster profit booking. Minimum stop is still wide enough
     # that simulated fees/slippage do not dominate every trade.
