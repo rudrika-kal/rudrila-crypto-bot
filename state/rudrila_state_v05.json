@@ -1,5 +1,5 @@
 {
-  "cash": 99.23071207333184,
+  "cash": 99.20591183761692,
   "realized_pnl": -0.4206152673353569,
   "positions": {
     "ETHUSDT": {
@@ -11,6 +11,17 @@
       "initial_dist": 9.33415,
       "confidence": 68,
       "opened_at": "2026-09-30T03:20:32.565484+00:00",
+      "lock_moved": false
+    },
+    "BTCUSDT": {
+      "side": "SHORT",
+      "qty": 0.00029796936691897695,
+      "entry": 83230.82326,
+      "stop": 83522.21856000001,
+      "tp": 82822.86984,
+      "initial_dist": 291.39529999999996,
+      "confidence": 73,
+      "opened_at": "2026-09-30T03:52:26.201444+00:00",
       "lock_moved": false
     }
   },
