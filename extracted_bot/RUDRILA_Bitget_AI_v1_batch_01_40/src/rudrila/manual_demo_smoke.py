@@ -1,7 +1,7 @@
 import json, time, uuid
 from rudrila.settings import BitgetSettings, load_config
 from rudrila.runtime_engine import DemoTradingRuntime
-from rudrila.rest_client import normalize_qty
+from rudrila.rest_client import normalize_qty, normalize_price
 
 def jprint(tag, obj):
     print(tag + " " + json.dumps(obj, separators=(",", ":"), default=str), flush=True)
@@ -64,8 +64,8 @@ def main():
             raise RuntimeError("MANUAL_SMOKE_QTY_NORMALIZATION_FAILED")
 
         oid = "RUD-MANUAL-" + str(int(time.time()*1000)) + "-" + uuid.uuid4().hex[:6]
-        tp = mid * 1.01
-        sl = mid * 0.99
+        tp = normalize_price(mid * 1.01, inst)
+        sl = normalize_price(mid * 0.99, inst)
         body = rt.exec.build_classic_order(
             sym, "buy", qty, order_type="market", oid=oid,
             margin_coin=rt.demo_margin_coin, take_profit=tp, stop_loss=sl
