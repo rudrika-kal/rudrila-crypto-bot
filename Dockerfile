@@ -18,4 +18,4 @@ ENV RUDRILA_MODE=demo
 ENV LIVE_TRADING=false
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python","-m","rudrila.main","--demo-run","86400"]
+CMD ["python","-m","rudrila.main","--demo-run","315360000"]
