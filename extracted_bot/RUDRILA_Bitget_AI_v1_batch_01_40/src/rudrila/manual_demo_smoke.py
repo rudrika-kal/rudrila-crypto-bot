@@ -168,3 +168,5 @@ if __name__ == "__main__":
     main()
 
 # force fresh Railway deploy for one-shot manual demo smoke
+
+# Diagnostic only; normal Railway runtime does not invoke this module.
