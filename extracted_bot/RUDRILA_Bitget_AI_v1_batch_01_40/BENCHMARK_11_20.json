@@ -1,0 +1,21 @@
+{
+  "iterations": 100000,
+  "elapsed_seconds": 1.9050166960000752,
+  "decisions_per_second": 52492.978255764356,
+  "last": {
+    "long_score": 81.99,
+    "short_score": 16.61,
+    "direction": "LONG",
+    "aligned_families": 6,
+    "veto": false,
+    "reasons": [
+      "order_flow:LONG:90.0",
+      "structure_fibonacci:LONG:85.0",
+      "trend:LONG:88.0",
+      "news_macro:LONG:75.0",
+      "momentum:LONG:80.0",
+      "volume_derivatives:LONG:82.0",
+      "volatility_execution:NEUTRAL:60.0"
+    ]
+  }
+}

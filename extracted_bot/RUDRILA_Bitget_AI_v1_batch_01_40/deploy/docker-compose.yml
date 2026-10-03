@@ -1,0 +1,14 @@
+services:
+  rudrila-bot:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    environment:
+      RUDRILA_MODE: demo
+      LIVE_TRADING: "false"
+      BITGET_DEMO_API_KEY: ${BITGET_DEMO_API_KEY:?set Demo API key}
+      BITGET_DEMO_API_SECRET: ${BITGET_DEMO_API_SECRET:?set Demo API secret}
+      BITGET_DEMO_API_PASSPHRASE: ${BITGET_DEMO_API_PASSPHRASE:?set Demo passphrase}
+    volumes:
+      - ../runtime:/app/runtime

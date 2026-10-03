@@ -1,0 +1,14 @@
+{
+  "release": "1.1.0-demo-ready",
+  "python_files": 54,
+  "syntax_errors": [],
+  "possible_embedded_secrets": [],
+  "critical_sha256": {
+    "src/rudrila/main.py": "8aa28d57f5224b20e6317a643cbb59d404d1225af4688559572d79f4a31feda4",
+    "src/rudrila/runtime_engine.py": "a4e1813f58ccf5ff4ffae544325dd649234150cc1c09670914828a51fb1f4aa9",
+    "src/rudrila/bitget_execution.py": "96bfe71cef9b926af5dd0ca1d76f367b083ac400391bc608b6eb8cca24749264",
+    "src/rudrila/private_ws.py": "4869148572b36e55fa12eba2baa3811b46be139b14d7e8fa4840881811a611a9",
+    "config/default.json": "d944cedda41e55bcf50e9f82ec58a5b60036f286df781b75bea5555d9274450a"
+  },
+  "pass": true
+}

@@ -1,0 +1,7 @@
+RUDRILA Bitget AI v1.1.1 Demo Monitoring
+========================================
+Compile: PASS
+Unit/integration tests: 92/92 PASS
+New monitoring test: PASS
+Real-money trading: OFF / unchanged
+Entry thresholds: unchanged

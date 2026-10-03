@@ -1,0 +1,38 @@
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py", line 32317, in hydrate_crdt_from_proto
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py", line 749, in __call__
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py", line 150, in call
+artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.
+test_auth_missing (test_batch_01_05.T.test_auth_missing) ... ok
+test_demo_only (test_batch_01_05.T.test_demo_only) ... ok
+test_gate (test_batch_01_05.T.test_gate) ... ok
+test_indicators (test_batch_01_05.T.test_indicators) ... ok
+test_live_rejected (test_batch_01_05.T.test_live_rejected) ... ok
+test_spread (test_batch_01_05.T.test_spread) ... ok
+test_subscriptions (test_batch_01_05.T.test_subscriptions) ... ok
+test_weights (test_batch_01_05.T.test_weights) ... ok
+test_06_trend_falling (test_batch_06_10.T.test_06_trend_falling) ... ok
+test_06_trend_rising (test_batch_06_10.T.test_06_trend_rising) ... ok
+test_07_momentum_rising (test_batch_06_10.T.test_07_momentum_rising) ... ok
+test_07_scores_bounded (test_batch_06_10.T.test_07_scores_bounded) ... ok
+test_08_fibonacci_math_down (test_batch_06_10.T.test_08_fibonacci_math_down) ... ok
+test_08_fibonacci_math_up (test_batch_06_10.T.test_08_fibonacci_math_up) ... ok
+test_08_structure_tracks_swing (test_batch_06_10.T.test_08_structure_tracks_swing) ... ok
+test_09_orderbook_buy_imbalance (test_batch_06_10.T.test_09_orderbook_buy_imbalance) ... ok
+test_09_orderflow_spread_veto (test_batch_06_10.T.test_09_orderflow_spread_veto) ... ok
+test_09_sell_delta (test_batch_06_10.T.test_09_sell_delta) ... ok
+test_10_funding_crowding_penalty (test_batch_06_10.T.test_10_funding_crowding_penalty) ... ok
+test_10_volume_oi_confirmation (test_batch_06_10.T.test_10_volume_oi_confirmation) ... ok
+test_10_ws_ticker_derivatives_fields (test_batch_06_10.T.test_10_ws_ticker_derivatives_fields) ... ok
+test_fast_incremental_benchmark (test_batch_06_10.T.test_fast_incremental_benchmark) ... ok
+test_integrated_five_families (test_batch_06_10.T.test_integrated_five_families) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.229s
+
+OK

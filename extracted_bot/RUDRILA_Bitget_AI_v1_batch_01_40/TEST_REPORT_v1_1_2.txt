@@ -1,0 +1,4 @@
+RUDRILA Bitget AI v1.1.2 Demo Safety Fix
+Local unittest discovery result: 98 tests run, 98 passed, 0 failed, 0 errors.
+Scope includes: signal families, entry rules, risk/safety, demo execution structures, private WS reconciliation, UTA kline normalization, monitoring dashboard, UTA equity/bonus parsing, repeated breaking-news freeze protection.
+Real-money trading remains OFF.

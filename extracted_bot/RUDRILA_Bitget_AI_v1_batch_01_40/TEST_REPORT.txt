@@ -1,0 +1,14 @@
+
+test_auth_missing (test_batch_01_05.T.test_auth_missing) ... ok
+test_demo_only (test_batch_01_05.T.test_demo_only) ... ok
+test_gate (test_batch_01_05.T.test_gate) ... ok
+test_indicators (test_batch_01_05.T.test_indicators) ... ok
+test_live_rejected (test_batch_01_05.T.test_live_rejected) ... ok
+test_spread (test_batch_01_05.T.test_spread) ... ok
+test_subscriptions (test_batch_01_05.T.test_subscriptions) ... ok
+test_weights (test_batch_01_05.T.test_weights) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK

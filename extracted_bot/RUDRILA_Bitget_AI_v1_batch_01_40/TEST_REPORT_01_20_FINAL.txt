@@ -1,0 +1,52 @@
+test_auth_missing (test_batch_01_05.T.test_auth_missing) ... ok
+test_demo_only (test_batch_01_05.T.test_demo_only) ... ok
+test_gate (test_batch_01_05.T.test_gate) ... ok
+test_indicators (test_batch_01_05.T.test_indicators) ... ok
+test_live_rejected (test_batch_01_05.T.test_live_rejected) ... ok
+test_spread (test_batch_01_05.T.test_spread) ... ok
+test_subscriptions (test_batch_01_05.T.test_subscriptions) ... ok
+test_weights (test_batch_01_05.T.test_weights) ... ok
+test_06_trend_falling (test_batch_06_10.T.test_06_trend_falling) ... ok
+test_06_trend_rising (test_batch_06_10.T.test_06_trend_rising) ... ok
+test_07_momentum_rising (test_batch_06_10.T.test_07_momentum_rising) ... ok
+test_07_scores_bounded (test_batch_06_10.T.test_07_scores_bounded) ... ok
+test_08_fibonacci_math_down (test_batch_06_10.T.test_08_fibonacci_math_down) ... ok
+test_08_fibonacci_math_up (test_batch_06_10.T.test_08_fibonacci_math_up) ... ok
+test_08_structure_tracks_swing (test_batch_06_10.T.test_08_structure_tracks_swing) ... ok
+test_09_orderbook_buy_imbalance (test_batch_06_10.T.test_09_orderbook_buy_imbalance) ... ok
+test_09_orderflow_spread_veto (test_batch_06_10.T.test_09_orderflow_spread_veto) ... ok
+test_09_sell_delta (test_batch_06_10.T.test_09_sell_delta) ... ok
+test_10_funding_crowding_penalty (test_batch_06_10.T.test_10_funding_crowding_penalty) ... ok
+test_10_volume_oi_confirmation (test_batch_06_10.T.test_10_volume_oi_confirmation) ... ok
+test_10_ws_ticker_derivatives_fields (test_batch_06_10.T.test_10_ws_ticker_derivatives_fields) ... ok
+test_fast_incremental_benchmark (test_batch_06_10.T.test_fast_incremental_benchmark) ... ok
+test_integrated_five_families (test_batch_06_10.T.test_integrated_five_families) ... ok
+test_11_normal_quality (test_batch_11_20.T.test_11_normal_quality) ... ok
+test_11_spread_veto (test_batch_11_20.T.test_11_spread_veto) ... ok
+test_12_dedupe (test_batch_11_20.T.test_12_dedupe) ... ok
+test_12_news_negative (test_batch_11_20.T.test_12_news_negative) ... ok
+test_12_news_positive (test_batch_11_20.T.test_12_news_positive) ... ok
+test_13_breaking_freeze_and_confirm (test_batch_11_20.T.test_13_breaking_freeze_and_confirm) ... ok
+test_14_consensus_long (test_batch_11_20.T.test_14_consensus_long) ... ok
+test_14_veto_propagates (test_batch_11_20.T.test_14_veto_propagates) ... ok
+test_15_entry_approved (test_batch_11_20.T.test_15_entry_approved) ... ok
+test_15_entry_reject_panic (test_batch_11_20.T.test_15_entry_reject_panic) ... ok
+test_16_regime_low_liquidity (test_batch_11_20.T.test_16_regime_low_liquidity) ... ok
+test_16_regime_trend (test_batch_11_20.T.test_16_regime_trend) ... ok
+test_17_correlated_exposure (test_batch_11_20.T.test_17_correlated_exposure) ... ok
+test_17_daily_loss_cap (test_batch_11_20.T.test_17_daily_loss_cap) ... ok
+test_17_risk_qty (test_batch_11_20.T.test_17_risk_qty) ... ok
+test_18_exit_long (test_batch_11_20.T.test_18_exit_long) ... ok
+test_18_exit_short (test_batch_11_20.T.test_18_exit_short) ... ok
+test_19_breakeven (test_batch_11_20.T.test_19_breakeven) ... ok
+test_19_partial_tp (test_batch_11_20.T.test_19_partial_tp) ... ok
+test_20_duplicate_guard (test_batch_11_20.T.test_20_duplicate_guard) ... ok
+test_20_order_builder (test_batch_11_20.T.test_20_order_builder) ... ok
+test_20_private_subscriptions (test_batch_11_20.T.test_20_private_subscriptions) ... ok
+test_20_ws_login_needs_key (test_batch_11_20.T.test_20_ws_login_needs_key) ... ok
+test_20_ws_reconciliation (test_batch_11_20.T.test_20_ws_reconciliation) ... ok
+
+----------------------------------------------------------------------
+Ran 47 tests in 0.186s
+
+OK

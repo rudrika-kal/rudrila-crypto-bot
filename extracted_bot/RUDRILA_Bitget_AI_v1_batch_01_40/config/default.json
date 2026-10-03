@@ -1,0 +1,142 @@
+{
+  "project": "RUDRILA Bitget AI",
+  "version": "1.1.6-fast-move-10x-demo",
+  "mode": "DEMO_ONLY",
+  "exchange": "Bitget UTA v3 market data + Classic v2 Demo account fallback",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "category": "usdt-futures",
+  "timeframes": [
+    "1m",
+    "5m",
+    "15m"
+  ],
+  "decision": {
+    "families": {
+      "order_flow": 20,
+      "structure_fibonacci": 18,
+      "trend": 15,
+      "news_macro": 15,
+      "momentum": 12,
+      "volume_derivatives": 12,
+      "volatility_execution": 8
+    },
+    "base_entry_score": 82,
+    "minimum_aligned_families": 5,
+    "adaptive_floor": 78,
+    "adaptive_ceiling": 88,
+    "force_trade": false,
+    "directional_core_fast_path": {
+      "enabled": true,
+      "fast_impulse_core_score": 45,
+      "trend_continuation_core_score": 60,
+      "minimum_core_aligned_families": 4,
+      "max_fast_path_spread_pct": 0.03,
+      "minimum_fast_path_depth_notional": 10000,
+      "force_trade": false
+    }
+  },
+  "risk": {
+    "risk_per_trade_pct": 0.25,
+    "max_daily_loss_pct": 1.5,
+    "max_total_drawdown_pct": 5.0,
+    "max_open_positions": 2,
+    "max_same_direction_correlated_positions": 1,
+    "live_trading_enabled": false
+  },
+  "execution": {
+    "max_spread_pct": 0.05,
+    "stale_market_data_ms": 3000,
+    "heartbeat_seconds": 30,
+    "reconnect_backoff_seconds": [
+      1,
+      2,
+      5,
+      10,
+      20,
+      30
+    ]
+  },
+  "step_1_05_status": {
+    "1_specification": "CLEAR",
+    "2_bitget_demo_setup": "READY_FOR_PRIVATE_AUTH_TEST",
+    "3_project_structure": "CLEAR",
+    "4_live_market_data_engine": "CLEAR_CODE_AND_LOCAL_TESTS",
+    "5_fast_incremental_engine": "CLEAR"
+  },
+  "step_1_10_status": {
+    "1_specification": "CLEAR",
+    "2_bitget_demo_setup": "PRIVATE_AUTH_PENDING_USER_KEY",
+    "3_project_structure": "CLEAR",
+    "4_live_market_data_engine": "CLEAR_CODE_AND_TESTS",
+    "5_fast_incremental_engine": "CLEAR",
+    "6_trend_family": "CLEAR",
+    "7_momentum_family": "CLEAR",
+    "8_structure_fibonacci_family": "CLEAR",
+    "9_order_flow_family": "CLEAR",
+    "10_volume_derivatives_family": "CLEAR"
+  },
+  "step_1_20_status": {
+    "1_specification": "CLEAR",
+    "2_bitget_demo_private_auth": "API_KEY_PENDING",
+    "3_project_structure": "CLEAR",
+    "4_public_market_data": "CLEAR_CODE_AND_TESTS",
+    "5_fast_incremental_engine": "CLEAR",
+    "6_trend_family": "CLEAR",
+    "7_momentum_family": "CLEAR",
+    "8_structure_fibonacci": "CLEAR",
+    "9_order_flow": "CLEAR",
+    "10_volume_derivatives": "CLEAR",
+    "11_volatility_execution": "CLEAR",
+    "12_news_macro_engine": "CLEAR_ENGINE_LIVE_FEED_WIRING_PENDING_DEPLOYMENT",
+    "13_breaking_news_guard": "CLEAR",
+    "14_consensus_7_family": "CLEAR",
+    "15_entry_rules": "CLEAR",
+    "16_regime_detector": "CLEAR",
+    "17_risk_engine": "CLEAR",
+    "18_sl_tp_engine": "CLEAR",
+    "19_position_management": "CLEAR",
+    "20_bitget_demo_execution": "CLEAR_CODE_PRIVATE_AUTH_TEST_PENDING_API_KEY"
+  },
+  "step_21_40_status": {
+    "21_emergency_safety": "CLEAR",
+    "22_accounting": "CLEAR",
+    "23_journal": "CLEAR",
+    "24_backtest": "CODE_CLEAR_REAL_DATA_PENDING",
+    "25_parameter_sweep": "CLEAR",
+    "26_out_of_sample": "CLEAR",
+    "27_walk_forward": "CODE_CLEAR_REAL_DATA_PENDING",
+    "28_stress": "CLEAR",
+    "29_demo_forward": "HARNESS_CLEAR_API_KEY_AND_SAMPLE_PENDING",
+    "30_performance_gate": "CLEAR",
+    "31_refinement": "CLEAR",
+    "32_24x7_deployment": "DEPLOY_READY_HOST_PENDING",
+    "33_dashboard": "CLEAR",
+    "34_alerts": "CODE_CLEAR_DESTINATION_PENDING",
+    "35_demo_acceptance": "CLEAR_GATE_DATA_PENDING",
+    "36_live_module_lock": "CLEAR",
+    "37_small_live_validation": "LOCKED_PENDING_ACCEPTANCE_AND_USER_ENABLE",
+    "38_versioning_backups": "CLEAR",
+    "39_final_audit": "CLEAR",
+    "40_continuous_improvement": "CLEAR"
+  },
+  "runtime": {
+    "news_refresh_seconds": 30,
+    "decision_on_closed_1m_candle": true,
+    "demo_only": true,
+    "default_leverage": 10,
+    "required_hold_mode": "one_way_mode"
+  },
+  "remaining_status": {
+    "historical_runner": "READY_TO_PULL_ON_NETWORKED_RUNTIME",
+    "news_live_feeds": "WIRED_FED_SEC_COINDESK_COINTELEGRAPH",
+    "private_ws": "READY_API_KEY_REQUIRED",
+    "private_preflight": "READY_API_KEY_REQUIRED",
+    "demo_order_execution": "READY_API_KEY_REQUIRED",
+    "forward_validation": "RUNS_AFTER_DEMO_START_AND_REQUIRES_TIME_SAMPLE",
+    "24x7_host": "PACKAGE_READY_HOST_NOT_PROVISIONED",
+    "live_money": "LOCKED"
+  }
+}

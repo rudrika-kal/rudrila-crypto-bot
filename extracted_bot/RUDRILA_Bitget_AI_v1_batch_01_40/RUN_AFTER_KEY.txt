@@ -1,0 +1,21 @@
+RUDRILA Bitget AI v1.1 — DEMO ONLY
+
+1) Set these three environment variables on the machine/host running the bot:
+   BITGET_DEMO_API_KEY
+   BITGET_DEMO_API_SECRET
+   BITGET_DEMO_API_PASSPHRASE
+
+2) Keep:
+   RUDRILA_MODE=demo
+   LIVE_TRADING=false
+
+3) Run checks:
+   PYTHONPATH=src python -m rudrila.main --public-preflight
+   PYTHONPATH=src python -m rudrila.main --private-preflight
+   PYTHONPATH=src python -m rudrila.main --private-ws-smoke 20
+
+4) Start Demo bot:
+   PYTHONPATH=src python -m rudrila.main --demo-run 86400
+
+5) Review forward stats later:
+   PYTHONPATH=src python -m rudrila.main --forward-report 14

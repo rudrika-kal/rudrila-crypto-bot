@@ -1,0 +1,17 @@
+[Unit]
+Description=RUDRILA Bitget AI Demo Bot
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+WorkingDirectory=/opt/rudrila
+Environment=RUDRILA_MODE=demo
+Environment=LIVE_TRADING=false
+EnvironmentFile=-/opt/rudrila/.env
+ExecStart=/opt/rudrila/venv/bin/python -m rudrila.main
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target
