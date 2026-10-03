@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, urllib.parse, urllib.request
+import json, urllib.parse, urllib.request, urllib.error
 from decimal import Decimal, ROUND_DOWN
 from .settings import BitgetSettings
 from .bitget_auth import SignedRequest
@@ -21,8 +21,16 @@ class BitgetREST:
         url=self.s.rest_base+path+qs
         data=raw.encode() if body is not None else None
         req=urllib.request.Request(url,data=data,headers=headers,method=method.upper())
-        with urllib.request.urlopen(req,timeout=self.timeout) as r:
-            out=json.loads(r.read().decode())
+        try:
+            with urllib.request.urlopen(req,timeout=self.timeout) as r:
+                out=json.loads(r.read().decode())
+        except urllib.error.HTTPError as e:
+            raw_err=e.read().decode(errors='replace')
+            try:
+                parsed=json.loads(raw_err)
+                raise RuntimeError(f"Bitget HTTP {e.code} code={parsed.get('code')} msg={parsed.get('msg')} data={parsed.get('data')}") from e
+            except json.JSONDecodeError:
+                raise RuntimeError(f"Bitget HTTP {e.code}: {raw_err[:500]}") from e
         if str(out.get('code')) not in ('00000','0'):
             raise RuntimeError(f'Bitget API error {out}')
         return out
@@ -60,6 +68,8 @@ class BitgetREST:
         return self._request('GET','/api/v2/mix/position/all-position',query=q,private=True)
     def classic_place_order(self, body:dict):
         return self._request('POST','/api/v2/mix/order/place-order',body=body,private=True)
+    def classic_set_leverage(self, symbol:str, leverage='10', margin_coin='USDT'):
+        return self._request('POST','/api/v2/mix/account/set-leverage',body={'symbol':symbol,'productType':'USDT-FUTURES','marginCoin':str(margin_coin).upper(),'leverage':str(leverage)},private=True)
 
     # Legacy simulated-coin Demo endpoints. This is Bitget's separate demo-coin
     # environment (SUSDT/SBTC/SETH, productType SUMCBL). It must NOT carry the
