@@ -192,6 +192,12 @@ def _floor_to_step(value:float, step:float, precision:int)->float:
     return float(q.quantize(quant,rounding=ROUND_DOWN))
 
 
+def normalize_price(price:float, instrument:dict)->float:
+    precision=int(instrument.get('pricePrecision') or instrument.get('pricePlace') or 8)
+    step=float(instrument.get('priceMultiplier') or instrument.get('priceEndStep') or 10**(-precision))
+    return _floor_to_step(price,step,precision)
+
+
 def normalize_qty(qty:float, instrument:dict)->float:
     precision=int(instrument.get('quantityPrecision') or instrument.get('volumePlace') or 8)
     step=float(instrument.get('quantityMultiplier') or instrument.get('sizeMultiplier') or 10**(-precision))
