@@ -11,6 +11,10 @@ PY
 
 WORKDIR /app/RUDRILA_Bitget_AI_v1_batch_01_40
 
+# HTTP400 repair overlay: preserve the packaged bot while replacing only the
+# REST client with the audited source that surfaces Bitget code/msg.
+COPY extracted_bot/RUDRILA_Bitget_AI_v1_batch_01_40/src/rudrila/rest_client.py /app/RUDRILA_Bitget_AI_v1_batch_01_40/src/rudrila/rest_client.py
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENV PYTHONPATH=/app/RUDRILA_Bitget_AI_v1_batch_01_40/src
