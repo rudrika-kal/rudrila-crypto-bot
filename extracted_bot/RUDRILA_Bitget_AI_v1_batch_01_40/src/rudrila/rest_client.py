@@ -67,9 +67,18 @@ class BitgetREST:
         if margin_coin: q['marginCoin']=margin_coin
         return self._request('GET','/api/v2/mix/position/all-position',query=q,private=True)
     def classic_place_order(self, body:dict):
-        return self._request('POST','/api/v2/mix/order/place-order',body=body,private=True)
+        # Classic v2 Demo uses the normal USDT contract identifiers; Demo is
+        # selected by the Demo API key + paptrading:1 header, not SUSDT.
+        clean=dict(body or {})
+        clean['productType']='USDT-FUTURES'
+        clean['marginCoin']='USDT'
+        sym=str(clean.get('symbol') or '').upper()
+        if sym not in ('BTCUSDT','ETHUSDT'):
+            raise RuntimeError(f'Classic v2 demo rejects synthetic display symbol {sym}; use BTCUSDT/ETHUSDT')
+        clean['symbol']=sym
+        return self._request('POST','/api/v2/mix/order/place-order',body=clean,private=True)
     def classic_set_leverage(self, symbol:str, leverage='10', margin_coin='USDT'):
-        return self._request('POST','/api/v2/mix/account/set-leverage',body={'symbol':symbol,'productType':'USDT-FUTURES','marginCoin':str(margin_coin).upper(),'leverage':str(leverage)},private=True)
+        return self._request('POST','/api/v2/mix/account/set-leverage',body={'symbol':str(symbol).upper(),'productType':'USDT-FUTURES','marginCoin':'USDT','leverage':str(leverage)},private=True)
 
     # Legacy simulated-coin Demo endpoints. This is Bitget's separate demo-coin
     # environment (SUSDT/SBTC/SETH, productType SUMCBL). It must NOT carry the
