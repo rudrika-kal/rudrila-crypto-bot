@@ -13,7 +13,7 @@ from .exits import ExitPlanner
 from .safety_layer import EmergencySafetyLayer
 from .journal import TradeJournal
 from .health import HealthState
-from .rest_client import BitgetREST, normalize_qty
+from .rest_client import BitgetREST, normalize_qty, normalize_price
 from .bitget_execution import DemoOrderExecutor
 from .private_ws import BitgetPrivateDemoWS
 from .mtf import MultiTimeframeTrend
@@ -557,6 +557,8 @@ class DemoTradingRuntime:
                         continue
                     qty_ins=self.instruments[sym]
                     qty=normalize_qty(rd.qty,qty_ins)
+                    tp_price=normalize_price(plan.tp2,qty_ins)
+                    sl_price=normalize_price(plan.stop,qty_ins)
                     min_amt=float(qty_ins.get('minOrderAmount') or qty_ins.get('minTradeUSDT') or 0)
                     snapshot['planned_qty']=qty; snapshot['planned_notional']=round(qty*c,6)
                     if qty<=0 or qty*c < min_amt:
@@ -570,7 +572,7 @@ class DemoTradingRuntime:
                             last_exc=None; ack=None; body=None
                             for api_symbol in (sym,self._demo_display_symbol(sym)):
                                 try:
-                                    body=self.exec.build_classic_order(api_symbol,order_side,qty,order_type='market',oid=base_oid,margin_coin=self.demo_margin_coin,take_profit=plan.tp2,stop_loss=plan.stop)
+                                    body=self.exec.build_classic_order(api_symbol,order_side,qty,order_type='market',oid=base_oid,margin_coin=self.demo_margin_coin,take_profit=tp_price,stop_loss=sl_price)
                                     ack=self.rest.classic_place_order(body)
                                     self.exec.record_external_ack(body,ack)
                                     break
@@ -594,8 +596,8 @@ class DemoTradingRuntime:
                         'side':side,
                         'client_oid':body['clientOid'],
                         'qty':qty,
-                        'stop_loss':plan.stop,
-                        'take_profit':plan.tp2,
+                        'stop_loss':sl_price,
+                        'take_profit':tp_price,
                         'order_ack_code':ack.get('code'),
                         'execution_backend':self.execution_backend,
                         'api_symbol':body.get('symbol'),
