@@ -45,8 +45,8 @@ def main():
             inst = {}
 
         ob = rt.rest.orderbook(sym, 5).get("data") or {}
-        bids = ob.get("bids") or []
-        asks = ob.get("asks") or []
+        bids = ob.get("bids") or ob.get("b") or []
+        asks = ob.get("asks") or ob.get("a") or []
         bid = float(bids[0][0]) if bids else 0.0
         ask = float(asks[0][0]) if asks else 0.0
         mid = (bid + ask) / 2.0 if bid > 0 and ask > 0 else max(bid, ask)
