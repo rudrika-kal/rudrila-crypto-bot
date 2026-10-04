@@ -19,6 +19,7 @@ from .private_ws import BitgetPrivateDemoWS
 from .mtf import MultiTimeframeTrend
 from .breaking_news import BreakingNewsGuard
 from .signals import FamilyScore
+from .position_manager import PositionManager, ManagedPosition
 
 @dataclass
 class RuntimeSymbol:
@@ -64,6 +65,21 @@ class DemoTradingRuntime:
         self.uta_asset_snapshot=[]; self.classic_account_snapshot=[]
         self.target_leverage=int(config.get('runtime',{}).get('default_leverage',10))
         self.leverage_ready=False; self.leverage_error=''; self.leverage_last_ms=0; self.leverage_verified={}
+        pm=config.get('position_management',{})
+        self.posmgr=PositionManager(
+            be_trigger_r=pm.get('breakeven_trigger_r',.8),
+            trail_trigger_r=pm.get('trailing_trigger_r',1.2),
+            max_hold_ms=int(float(pm.get('max_hold_minutes',45))*60_000),
+            opposite_score=pm.get('opposite_consensus_score',60),
+            opposite_aligned=pm.get('opposite_aligned_families',4),
+            false_breakout_ms=int(float(pm.get('false_breakout_minutes',10))*60_000),
+            false_breakout_adverse_r=pm.get('false_breakout_adverse_r',.25),
+            profit_lock_trigger_r=pm.get('profit_lock_trigger_r',.9),
+            profit_lock_floor_r=pm.get('profit_lock_floor_r',.25),
+            trailing_giveback_r=pm.get('trailing_giveback_r',.45),
+        )
+        self.managed_positions={}
+        self.position_exit_inflight={}
 
     async def _news_loop(self):
         while True:
@@ -323,6 +339,169 @@ class DemoTradingRuntime:
             if x>0:
                 self.account_equity=x; self.account_last_ok_ms=int(time.time()*1000)
 
+
+    @staticmethod
+    def _num(row:dict|None,*keys,default=0.0):
+        row=row or {}
+        for k in keys:
+            try:
+                v=row.get(k)
+                if v not in (None,''):
+                    return float(v)
+            except Exception:
+                pass
+        return float(default)
+
+    @staticmethod
+    def _ts_ms(row:dict|None,*keys,default=0):
+        row=row or {}
+        for k in keys:
+            try:
+                v=int(float(row.get(k) or 0))
+                if v>0:
+                    return v*1000 if v<10_000_000_000 else v
+            except Exception:
+                pass
+        return int(default or 0)
+
+    def _classic_position_any(self,sym:str):
+        for row in self.classic_positions:
+            if isinstance(row,dict) and self._same_market(row.get('symbol'),sym):
+                return row
+        return None
+
+    def _classic_position_active(self,sym:str):
+        for row in self.classic_positions:
+            if not isinstance(row,dict) or not self._same_market(row.get('symbol'),sym):
+                continue
+            if self._num(row,'total','available','size')>0:
+                return row
+        return None
+
+    def _adopt_managed_position(self,sym:str,row:dict,mark:float,now_ms:int):
+        qty=self._num(row,'total','available','size')
+        if qty<=0:
+            return None
+        hold=str(row.get('holdSide') or row.get('posSide') or '').lower()
+        side='LONG' if hold=='long' else 'SHORT' if hold=='short' else ''
+        if not side:
+            return None
+        p=self.managed_positions.get(sym)
+        entry=self._num(row,'openPriceAvg','averageOpenPrice','openPrice','avgEntryPrice','entryPrice',default=mark)
+        if entry<=0: entry=mark
+        if p is not None:
+            p.qty=qty
+            if entry>0: p.entry=entry
+            return p
+
+        opened=self._ts_ms(row,'cTime','openTime','createdTime','createdAt',default=now_ms)
+        stop=self._num(row,'stopLossPrice','stopLoss','presetStopLossPrice')
+        tp2=self._num(row,'takeProfitPrice','takeProfit','presetStopSurplusPrice')
+        base_r=max(entry*.0025,1e-9)
+        if stop<=0:
+            stop=entry-base_r if side=='LONG' else entry+base_r
+        initial_r=max(abs(entry-stop),base_r)
+        if tp2<=0:
+            tp2=entry+initial_r*1.8 if side=='LONG' else entry-initial_r*1.8
+        tp1=entry+initial_r*1.35 if side=='LONG' else entry-initial_r*1.35
+        p=ManagedPosition(sym,side,qty,entry,stop,tp1,tp2,initial_r,opened,
+                          entry_regime='RECOVERED')
+        self.managed_positions[sym]=p
+        age=max(0,(now_ms-opened)/60000)
+        print(f"POSITION_TRACKED {sym} side={side} qty={qty} entry={entry} age_min={age:.1f}",flush=True)
+        return p
+
+    def _submit_classic_close(self,sym:str,p:ManagedPosition,row:dict,reason:str,
+                              mark:float,qty_fraction:float=1.0):
+        now_ms=int(time.time()*1000)
+        full=qty_fraction>=.999
+        if full:
+            inflight=self.position_exit_inflight.get(sym)
+            if inflight and now_ms-int(inflight.get('submitted_ms') or 0)<15_000:
+                return True
+        qty=max(0.0,p.qty*max(0.0,min(1.0,float(qty_fraction))))
+        qty=normalize_qty(qty,self.instruments.get(sym,{}) or {})
+        if qty<=0:
+            qty=normalize_qty(p.qty,self.instruments.get(sym,{}) or {})
+        if qty<=0:
+            print(f"POSITION_EXIT_REJECTED {sym} reason=invalid close quantity",flush=True)
+            return False
+        hold=str(row.get('holdSide') or '').lower()
+        margin_coin=str(row.get('marginCoin') or self.demo_margin_coin or 'USDT')
+        oid=f"RUD-X-{sym}-{now_ms}-{uuid.uuid4().hex[:5]}"
+        mode=str(self.account_hold_mode or '').lower()
+        if 'hedge' in mode or hold in ('long','short'):
+            body={
+                'symbol':sym,'productType':'USDT-FUTURES','marginMode':'crossed',
+                'marginCoin':margin_coin,'size':format(qty,'.12g'),
+                'side':'buy' if hold=='long' else 'sell',
+                'tradeSide':'close','orderType':'market','force':'gtc','clientOid':oid,
+            }
+        else:
+            side='sell' if p.side=='LONG' else 'buy'
+            body={
+                'symbol':sym,'productType':'USDT-FUTURES','marginMode':'crossed',
+                'marginCoin':margin_coin,'size':format(qty,'.12g'),
+                'side':side,'orderType':'market','force':'gtc','reduceOnly':'YES',
+                'clientOid':oid,
+            }
+        try:
+            ack=self.rest.classic_place_order(body)
+            self.exec.record_external_ack(body,ack)
+        except Exception as exc:
+            self.safety.record_order_reject(str(exc))
+            print(f"POSITION_EXIT_REJECTED {sym} reason={str(exc)[:240]}",flush=True)
+            return False
+        self.safety.clear_order_rejects()
+        if full:
+            self.position_exit_inflight[sym]={
+                'submitted_ms':now_ms,'reason':reason,'mark':mark,'qty':qty,
+                'ack_code':ack.get('code')
+            }
+            print(f"POSITION_EXIT_SUBMITTED {sym} side={p.side} qty={qty} reason={reason} mark={mark}",flush=True)
+        else:
+            p.qty=max(0.0,p.qty-qty)
+            print(f"POSITION_PARTIAL_EXIT_SUBMITTED {sym} qty={qty} reason={reason} mark={mark}",flush=True)
+        return True
+
+    def _reconcile_classic_position(self,sym:str,mark:float=0.0):
+        if self.execution_backend!='CLASSIC_V2_DEMO':
+            return None
+        now_ms=int(time.time()*1000)
+        row=self._classic_position_active(sym)
+        if row is not None:
+            p=self._adopt_managed_position(sym,row,mark,now_ms)
+            inflight=self.position_exit_inflight.get(sym)
+            if inflight and now_ms-int(inflight.get('submitted_ms') or 0)>=15_000:
+                print(f"POSITION_EXIT_STILL_OPEN {sym} retry_allowed=true",flush=True)
+                self.position_exit_inflight.pop(sym,None)
+            return p
+
+        p=self.managed_positions.get(sym)
+        if p is None:
+            return None
+        anyrow=self._classic_position_any(sym) or {}
+        inflight=self.position_exit_inflight.pop(sym,None)
+        reason=(inflight or {}).get('reason') or 'EXCHANGE_TP_SL_OR_EXTERNAL'
+        exit_price=float((inflight or {}).get('mark') or mark or
+                         self._num(anyrow,'markPrice','marketPrice','closePrice',default=p.entry))
+        gross=(exit_price-p.entry)*p.qty if p.side=='LONG' else (p.entry-exit_price)*p.qty
+        realized=self._num(anyrow,'achievedProfits','realizedPL','realizedPnl','realizedPnlAfterFee',default=0.0)
+        pnl_text=f"realized={realized:.6f}" if abs(realized)>1e-12 else f"estimated_gross={gross:.6f}"
+        print(f"POSITION_CLOSED {sym} side={p.side} qty={p.qty} reason={reason} exit={exit_price} {pnl_text}",flush=True)
+        try:
+            self.journal.log_trade(
+                trade_id=f"{sym}-{p.opened_ms}",symbol=sym,side=p.side,
+                opened_ms=p.opened_ms,closed_ms=now_ms,entry=p.entry,exit=exit_price,
+                qty=p.qty,gross_pnl=gross,fees=None,funding=None,slippage=None,
+                net_pnl=realized if abs(realized)>1e-12 else None,
+                exit_reason=reason,decision_id=None,
+            )
+        except Exception as exc:
+            print(f"POSITION_JOURNAL_WARNING {sym} reason={str(exc)[:160]}",flush=True)
+        self.managed_positions.pop(sym,None)
+        return None
+
     def _health_payload(self, equity:float)->dict:
         positions=[]
         for (symbol,side),row in self.exec.state.positions.items():
@@ -372,6 +551,15 @@ class DemoTradingRuntime:
             'open_positions':positions,
             'orders_seen':len(self.exec.state.orders),
             'fills_seen':len(self.exec.state.fills),
+            'position_management':{
+                sym:{
+                    'side':p.side,'qty':p.qty,'entry':p.entry,'stop':p.stop,
+                    'tp1':p.tp1,'tp2':p.tp2,'peak_r':round(p.peak_r,4),
+                    'age_min':round(max(0,(int(time.time()*1000)-p.opened_ms)/60000),2),
+                    'entry_regime':p.entry_regime,
+                    'exit_inflight':sym in self.position_exit_inflight,
+                } for sym,p in self.managed_positions.items()
+            },
             'news_signed_score':self.news_engine.last.get('signed_score',0),
             'news_errors':self.news_collector.errors,
             'ts_ms':int(time.time()*1000),
@@ -421,6 +609,9 @@ class DemoTradingRuntime:
                 for sym in self.symbols:
                     st=public_ws.states[sym]
                     rs=self.state[sym]
+                    mark_now=((float(st.bid)+float(st.ask))/2.0) if st.bid and st.ask else float(st.bid or st.ask or 0)
+                    if self.execution_backend=='CLASSIC_V2_DEMO':
+                        self._reconcile_classic_position(sym,mark_now)
                     for tf,last_seen_attr,last_proc_attr,method in [
                         ('5m','last_seen_5m_ts','last_processed_5m_ts',rs.mtf.update_5m),
                         ('15m','last_seen_15m_ts','last_processed_15m_ts',rs.mtf.update_15m)]:
@@ -530,6 +721,51 @@ class DemoTradingRuntime:
                         flush=True,
                     )
                     did=self.journal.log_decision(ts_ms=pts,symbol=sym,regime=regime,side=co.direction,composite=max(co.long_score,co.short_score),aligned=co.aligned_families,news=self.news_engine.last.get('signed_score',0),families=fam,reason=ed.reason,entered=False)
+
+                    # Manage an existing Classic Demo position on every completed
+                    # 1m bar. Single 1m noise cannot close it; PositionManager
+                    # requires confirmed reversal/failed breakout/profit giveback,
+                    # the 45m time stop, or the account kill switch.
+                    if self.execution_backend=='CLASSIC_V2_DEMO':
+                        prow=self._classic_position_active(sym)
+                        p=self._reconcile_classic_position(sym,c)
+                        if prow is not None and p is not None:
+                            kill_switch=(dl>=self.risk.max_daily_loss_pct or dd>=self.risk.max_drawdown_pct)
+                            action=self.posmgr.update(
+                                p,c,now_ms,rs.vol.last.get('atr',0),
+                                consensus_direction=co.direction,
+                                long_score=co.long_score,short_score=co.short_score,
+                                aligned_families=co.aligned_families,
+                                mtf1=rs.mtf.last.get('1m','NEUTRAL'),
+                                mtf5=rs.mtf.last.get('5m','NEUTRAL'),
+                                mtf15=rs.mtf.last.get('15m','NEUTRAL'),
+                                structure_direction=scores['structure_fibonacci'].direction,
+                                momentum_direction=scores['momentum'].direction,
+                                kill_switch=kill_switch,
+                            )
+                            snapshot['position_action']=action.action
+                            snapshot['position_action_reason']=action.reason
+                            snapshot['managed_peak_r']=round(p.peak_r,4)
+                            if action.action=='CLOSE':
+                                ok=self._submit_classic_close(sym,p,prow,action.reason,c,1.0)
+                                snapshot['status']='EXIT_SUBMITTED' if ok else 'EXIT_REJECTED'
+                                snapshot['reason']=action.reason
+                                rs.last_decision=snapshot
+                                continue
+                            if action.action=='PARTIAL_CLOSE':
+                                ok=self._submit_classic_close(sym,p,prow,action.reason,c,action.qty_fraction)
+                                snapshot['status']='PARTIAL_EXIT_SUBMITTED' if ok else 'PARTIAL_EXIT_REJECTED'
+                                snapshot['reason']=action.reason
+                                rs.last_decision=snapshot
+                                continue
+                            if action.action=='MOVE_STOP':
+                                # This is a bot-side soft stop. The original
+                                # exchange SL remains attached as crash protection.
+                                print(f"POSITION_SOFT_STOP {sym} stop={p.stop} reason={action.reason}",flush=True)
+                                snapshot['status']='POSITION_MANAGED'
+                                snapshot['reason']=action.reason
+                                rs.last_decision=snapshot
+                                continue
                     if not ed.enter: continue
                     # Never stack the same market. Use the active backend's
                     # authoritative position state.
@@ -557,6 +793,7 @@ class DemoTradingRuntime:
                         continue
                     qty_ins=self.instruments[sym]
                     qty=normalize_qty(rd.qty,qty_ins)
+                    tp1_price=normalize_price(plan.tp1,qty_ins)
                     tp_price=normalize_price(plan.tp2,qty_ins)
                     sl_price=normalize_price(plan.stop,qty_ins)
                     min_amt=float(qty_ins.get('minOrderAmount') or qty_ins.get('minTradeUSDT') or 0)
@@ -590,6 +827,12 @@ class DemoTradingRuntime:
                         continue
                     self.safety.clear_order_rejects()
                     rs.last_entry_ms=now_ms
+                    self.managed_positions[sym]=ManagedPosition(
+                        symbol=sym,side=side,qty=qty,entry=c,stop=sl_price,
+                        tp1=tp1_price,tp2=tp_price,initial_r=max(abs(c-sl_price),c*.0025),
+                        opened_ms=now_ms,entry_regime=regime,
+                    )
+                    self.position_exit_inflight.pop(sym,None)
                     snapshot.update({
                         'status':'ORDER_SUBMITTED',
                         'reason':'demo market order accepted; awaiting private WS reconciliation',
@@ -597,6 +840,7 @@ class DemoTradingRuntime:
                         'client_oid':body['clientOid'],
                         'qty':qty,
                         'stop_loss':sl_price,
+                        'take_profit_1':tp1_price,
                         'take_profit':tp_price,
                         'order_ack_code':ack.get('code'),
                         'execution_backend':self.execution_backend,
