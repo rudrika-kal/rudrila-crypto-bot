@@ -1,6 +1,6 @@
 {
   "project": "RUDRILA Bitget AI",
-  "version": "1.1.11-dynamic-exit-demo",
+  "version": "1.1.12-position-visibility-race-fix-demo",
   "mode": "DEMO_ONLY",
   "exchange": "Bitget UTA v3 market data + Classic v2 Demo account fallback",
   "symbols": [
@@ -151,6 +151,9 @@
     "profit_lock_trigger_r": 0.9,
     "profit_lock_floor_r": 0.25,
     "single_1m_flip_exit": false,
-    "live_trading_enabled": false
+    "live_trading_enabled": false,
+    "open_visibility_grace_seconds": 30,
+    "open_visibility_abandon_seconds": 120,
+    "close_visibility_confirm_seconds": 4
   }
 }
