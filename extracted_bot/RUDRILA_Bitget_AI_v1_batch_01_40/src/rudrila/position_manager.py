@@ -17,6 +17,8 @@ class ManagedPosition:
     trailing:bool=False
     peak_r:float=0.0
     entry_regime:str=''
+    exchange_seen:bool=False
+    last_visibility_log_ms:int=0
 
 @dataclass(frozen=True)
 class PositionAction:
@@ -51,6 +53,27 @@ class PositionManager:
     def favorable_r(self,p:ManagedPosition,mark:float)->float:
         move=(mark-p.entry) if p.side=="LONG" else (p.entry-mark)
         return move/max(p.initial_r,1e-12)
+
+    @staticmethod
+    def exchange_visibility_state(p:ManagedPosition,now_ms:int,
+                                  grace_ms:int=30_000,
+                                  abandon_ms:int=120_000)->str:
+        """Classify visibility after an accepted market-order ACK.
+
+        Classic Demo REST can lag briefly after ORDER_SUBMITTED. A locally
+        managed position is never considered closed until the exchange has
+        actually exposed it at least once. If it never appears, return
+        UNCONFIRMED after a generous timeout so callers can warn/drop the local
+        placeholder without fabricating a POSITION_CLOSED event.
+        """
+        if p.exchange_seen:
+            return "CONFIRMED"
+        age=max(0,int(now_ms)-int(p.opened_ms or now_ms))
+        if age<int(grace_ms):
+            return "PENDING"
+        if age<int(abandon_ms):
+            return "PENDING_LATE"
+        return "UNCONFIRMED"
 
     def update(self,p:ManagedPosition,mark:float,now_ms:int,atr:float,
                reversal_score:float=0.0, *, consensus_direction:str='NEUTRAL',
