@@ -19,6 +19,7 @@ class ManagedPosition:
     entry_regime:str=''
     exchange_seen:bool=False
     last_visibility_log_ms:int=0
+    exchange_missing_since_ms:int=0
 
 @dataclass(frozen=True)
 class PositionAction:
@@ -74,6 +75,21 @@ class PositionManager:
         if age<int(abandon_ms):
             return "PENDING_LATE"
         return "UNCONFIRMED"
+
+
+    @staticmethod
+    def exchange_close_state(p:ManagedPosition,now_ms:int,
+                             confirm_ms:int=4_000)->str:
+        """Require a second exchange snapshot before declaring a seen position closed."""
+        if not p.exchange_seen:
+            return "NOT_CONFIRMED_OPEN"
+        now_ms=int(now_ms)
+        if not p.exchange_missing_since_ms:
+            p.exchange_missing_since_ms=now_ms
+            return "PENDING"
+        if now_ms-int(p.exchange_missing_since_ms)<int(confirm_ms):
+            return "PENDING"
+        return "CONFIRMED"
 
     def update(self,p:ManagedPosition,mark:float,now_ms:int,atr:float,
                reversal_score:float=0.0, *, consensus_direction:str='NEUTRAL',
