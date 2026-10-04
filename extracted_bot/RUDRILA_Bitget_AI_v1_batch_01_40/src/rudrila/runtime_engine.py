@@ -475,6 +475,12 @@ class DemoTradingRuntime:
             if inflight and now_ms-int(inflight.get('submitted_ms') or 0)>=15_000:
                 print(f"POSITION_EXIT_STILL_OPEN {sym} retry_allowed=true",flush=True)
                 self.position_exit_inflight.pop(sym,None)
+                inflight=None
+            # Recovery-safe time stop: after a restart, an already-stale scalp
+            # must not wait for the next candle before being managed.
+            if (p is not None and mark>0 and not inflight
+                    and now_ms-p.opened_ms>=self.posmgr.max_hold_ms):
+                self._submit_classic_close(sym,p,row,'TIME_EXIT_45M_RECOVERY',mark,1.0)
             return p
 
         p=self.managed_positions.get(sym)
