@@ -31,6 +31,20 @@ def main():
     a=pm.update(_pos(entry_regime='TREND'),100.1,46*60_000,.4)
     assert a.action=='CLOSE' and a.reason=='TIME_EXIT_45M', a
 
+    # Regression: ORDER_SUBMITTED ACK must not be treated as POSITION_CLOSED
+    # before Classic Demo exposes the position snapshot.
+    pending=_pos(opened_ms=1_000,exchange_seen=False)
+    assert pm.exchange_visibility_state(pending,5_000,30_000,120_000)=='PENDING'
+    assert pm.exchange_visibility_state(pending,45_000,30_000,120_000)=='PENDING_LATE'
+    assert pm.exchange_visibility_state(pending,125_000,30_000,120_000)=='UNCONFIRMED'
+
+    # Once the exchange has exposed the position, disappearance still requires
+    # a second snapshot window before a close can be declared.
+    seen=_pos(opened_ms=1_000,exchange_seen=True)
+    assert pm.exchange_close_state(seen,10_000,4_000)=='PENDING'
+    assert pm.exchange_close_state(seen,12_000,4_000)=='PENDING'
+    assert pm.exchange_close_state(seen,14_100,4_000)=='CONFIRMED'
+
     print('POSITION_MANAGER_SELFTEST PASS',flush=True)
 
 if __name__=='__main__':
