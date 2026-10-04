@@ -1,6 +1,6 @@
 {
   "project": "RUDRILA Bitget AI",
-  "version": "1.1.6-fast-move-10x-demo",
+  "version": "1.1.11-dynamic-exit-demo",
   "mode": "DEMO_ONLY",
   "exchange": "Bitget UTA v3 market data + Classic v2 Demo account fallback",
   "symbols": [
@@ -41,7 +41,7 @@
   "risk": {
     "risk_per_trade_pct": 0.25,
     "max_daily_loss_pct": 1.5,
-    "max_total_drawdown_pct": 5.0,
+    "max_total_drawdown_pct": 5,
     "max_open_positions": 2,
     "max_same_direction_correlated_positions": 1,
     "live_trading_enabled": false
@@ -138,5 +138,19 @@
     "forward_validation": "RUNS_AFTER_DEMO_START_AND_REQUIRES_TIME_SAMPLE",
     "24x7_host": "PACKAGE_READY_HOST_NOT_PROVISIONED",
     "live_money": "LOCKED"
+  },
+  "position_management": {
+    "max_hold_minutes": 45,
+    "breakeven_trigger_r": 0.8,
+    "trailing_trigger_r": 1.2,
+    "trailing_giveback_r": 0.45,
+    "opposite_consensus_score": 60,
+    "opposite_aligned_families": 4,
+    "false_breakout_minutes": 10,
+    "false_breakout_adverse_r": 0.25,
+    "profit_lock_trigger_r": 0.9,
+    "profit_lock_floor_r": 0.25,
+    "single_1m_flip_exit": false,
+    "live_trading_enabled": false
   }
 }
