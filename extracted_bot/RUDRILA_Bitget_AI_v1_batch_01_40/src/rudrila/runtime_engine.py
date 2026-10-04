@@ -80,6 +80,9 @@ class DemoTradingRuntime:
         )
         self.managed_positions={}
         self.position_exit_inflight={}
+        self.position_open_grace_ms=int(float(pm.get('open_visibility_grace_seconds',30))*1000)
+        self.position_open_abandon_ms=int(float(pm.get('open_visibility_abandon_seconds',120))*1000)
+        self.position_close_confirm_ms=int(float(pm.get('close_visibility_confirm_seconds',4))*1000)
 
     async def _news_loop(self):
         while True:
@@ -390,8 +393,14 @@ class DemoTradingRuntime:
         entry=self._num(row,'openPriceAvg','averageOpenPrice','openPrice','avgEntryPrice','entryPrice',default=mark)
         if entry<=0: entry=mark
         if p is not None:
+            first_seen=not p.exchange_seen
             p.qty=qty
             if entry>0: p.entry=entry
+            p.exchange_seen=True
+            p.exchange_missing_since_ms=0
+            if first_seen:
+                age=max(0,(now_ms-p.opened_ms)/1000)
+                print(f"POSITION_OPEN_CONFIRMED {sym} side={p.side} qty={qty} entry={p.entry} ack_to_position_sec={age:.2f}",flush=True)
             return p
 
         opened=self._ts_ms(row,'cTime','openTime','createdTime','createdAt',default=now_ms)
@@ -405,7 +414,7 @@ class DemoTradingRuntime:
             tp2=entry+initial_r*1.8 if side=='LONG' else entry-initial_r*1.8
         tp1=entry+initial_r*1.35 if side=='LONG' else entry-initial_r*1.35
         p=ManagedPosition(sym,side,qty,entry,stop,tp1,tp2,initial_r,opened,
-                          entry_regime='RECOVERED')
+                          entry_regime='RECOVERED',exchange_seen=True)
         self.managed_positions[sym]=p
         age=max(0,(now_ms-opened)/60000)
         print(f"POSITION_TRACKED {sym} side={side} qty={qty} entry={entry} age_min={age:.1f}",flush=True)
@@ -486,6 +495,32 @@ class DemoTradingRuntime:
         p=self.managed_positions.get(sym)
         if p is None:
             return None
+
+        # ORDER_SUBMITTED is only an ACK. Classic Demo position snapshots can
+        # lag by a few polls, so a locally-created managed position is not
+        # allowed to become POSITION_CLOSED until the exchange has exposed it
+        # at least once.
+        visibility=self.posmgr.exchange_visibility_state(
+            p,now_ms,self.position_open_grace_ms,self.position_open_abandon_ms)
+        if visibility in ('PENDING','PENDING_LATE'):
+            if now_ms-int(p.last_visibility_log_ms or 0)>=15_000:
+                p.last_visibility_log_ms=now_ms
+                print(f"POSITION_OPEN_PENDING {sym} state={visibility} age_sec={(now_ms-p.opened_ms)/1000:.1f}",flush=True)
+            return p
+        if visibility=='UNCONFIRMED':
+            print(f"POSITION_OPEN_UNCONFIRMED {sym} ack_age_sec={(now_ms-p.opened_ms)/1000:.1f} action=drop_local_placeholder",flush=True)
+            self.managed_positions.pop(sym,None)
+            self.position_exit_inflight.pop(sym,None)
+            return None
+
+        # Even after a position has been seen, require another successful
+        # exchange snapshot to confirm disappearance. This suppresses transient
+        # empty-position snapshots from generating false close logs.
+        close_state=self.posmgr.exchange_close_state(
+            p,now_ms,self.position_close_confirm_ms)
+        if close_state!='CONFIRMED':
+            return p
+
         anyrow=self._classic_position_any(sym) or {}
         inflight=self.position_exit_inflight.pop(sym,None)
         reason=(inflight or {}).get('reason') or 'EXCHANGE_TP_SL_OR_EXTERNAL'
